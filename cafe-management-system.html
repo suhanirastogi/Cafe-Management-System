@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CMS-1 · Cafe Management System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#1B1411;
+    --black-2:#241B16;
+    --black-3:#2E2219;
+    --counter:#100B09;
+    --amber:#FF9D2E;
+    --amber-dim:#8A5419;
+    --amber-soft:rgba(255,157,46,0.14);
+    --paper:#FAF5E9;
+    --paper-shadow:#E3D9C4;
+    --ink:#2A2118;
+    --ink-soft:#7A6B58;
+    --red:#C1432B;
+    --red-dim:#7A2C1D;
+    --green:#4F8F62;
+    --radius-sm:6px;
+    --radius-md:14px;
+    --font-mono:'JetBrains Mono','Courier New',monospace;
+    --font-body:'Inter',system-ui,-apple-system,sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, #241915 0%, var(--counter) 60%),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 40px);
+    font-family:var(--font-body);
+    color:var(--paper);
+    padding:32px 16px 60px;
+    display:flex;
+    justify-content:center;
+  }
+
+  button, input{font-family:inherit;}
+
+  :focus-visible{
+    outline:2px solid var(--amber);
+    outline-offset:2px;
+  }
+
+  .wrap{width:100%;max-width:980px;}
+
+  .masthead{
+    text-align:center;
+    margin-bottom:22px;
+  }
+  .masthead .eyebrow{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.28em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+  }
+  .masthead h1{
+    margin:6px 0 0;
+    font-family:var(--font-mono);
+    font-weight:800;
+    font-size:clamp(22px,4vw,32px);
+    letter-spacing:0.02em;
+    color:var(--paper);
+  }
+
+  /* ---- Machine shell ---- */
+  .pos-machine{
+    background:linear-gradient(180deg,var(--black-3),var(--black));
+    border-radius:22px;
+    padding:18px;
+    box-shadow:
+      0 30px 60px -20px rgba(0,0,0,0.7),
+      0 0 0 1px rgba(255,255,255,0.04) inset;
+  }
+
+  .pos-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 14px 18px;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:0.08em;
+    color:var(--amber);
+  }
+  .brand .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--amber);
+    box-shadow:0 0 8px 2px var(--amber-soft);
+  }
+
+  /* key switch */
+  .key-switch{
+    position:relative;
+    width:188px;
+    height:42px;
+    border-radius:21px;
+    background:var(--black-2);
+    border:1px solid rgba(255,157,46,0.3);
+    cursor:pointer;
+    padding:0;
+    overflow:hidden;
+  }
+  .key-switch .track-label{
+    position:absolute;
+    top:0;bottom:0;
+    width:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    letter-spacing:0.12em;
+    color:var(--ink-soft);
+    transition:color .2s;
+  }
+  .key-switch .track-label.left{left:0;}
+  .key-switch .track-label.right{right:0;}
+  .key-switch[data-mode="customer"] .track-label.left{color:var(--black);}
+  .key-switch[data-mode="admin"] .track-label.right{color:var(--black);}
+  .key-thumb{
+    position:absolute;
+    top:3px;left:3px;
+    width:92px;height:34px;
+    border-radius:17px;
+    background:var(--amber);
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    transition:transform .28s cubic-bezier(.4,0,.2,1);
+    box-shadow:0 0 14px 1px rgba(255,157,46,0.45);
+  }
+  .key-switch[data-mode="admin"] .key-thumb{transform:translateX(90px);}
+  .key-thumb svg{width:14px;height:14px;flex:none;}
+  .key-thumb span{
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    font-weight:700;
+    letter-spacing:0.1em;
+    color:var(--black);
+  }
+
+  /* ---- body grid ---- */
+  .pos-body{
+    display:grid;
+    grid-template-columns:1.15fr 0.85fr;
+    gap:16px;
+    padding:0 6px 6px;
+  }
+  @media (max-width:760px){
+    .pos-body{grid-template-columns:1fr;}
+  }
+
+  .panel{
+    background:var(--black-2);
+    border-radius:var(--radius-md);
+    border:1px solid rgba(255,255,255,0.05);
+    padding:20px;
+    min-height:420px;
+  }
+
+  .panel-title{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0 0 4px;
+  }
+  .panel-heading{
+    font-family:var(--font-mono);
+    font-size:19px;
+    font-weight:700;
+    color:var(--paper);
+    margin:0 0 18px;
+  }
+
+  .field-label{
+    display:block;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+    letter-spacing:0.02em;
+  }
+  .text-input{
+    width:100%;
+    background:var(--black);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:var(--radius-sm);
+    padding:11px 12px;
+    color:var(--paper);
+    font-size:14px;
+    margin-bottom:18px;
+  }
+  .text-input::placeholder{color:#5b5048;}
+  .text-input:focus{border-color:var(--amber);}
+
+  /* menu / register keys */
+  .menu-grid{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .menu-key{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    background:var(--black);
+    border:1px solid rgba(255,255,255,0.06);
+    border-radius:var(--radius-sm);
+    padding:12px 14px;
+  }
+  .menu-key .mk-info{display:flex;flex-direction:column;gap:2px;}
+  .menu-key .mk-name{font-weight:600;font-size:14.5px;color:var(--paper);}
+  .menu-key .mk-price{font-family:var(--font-mono);font-size:12px;color:var(--amber);}
+  .mk-controls{display:flex;align-items:center;gap:10px;flex:none;}
+  .stepper{display:flex;align-items:center;gap:0;border:1px solid rgba(255,255,255,0.12);border-radius:8px;overflow:hidden;}
+  .stepper button{
+    width:28px;height:28px;
+    background:var(--black-2);
+    border:none;
+    color:var(--paper);
+    font-size:15px;
+    cursor:pointer;
+    line-height:1;
+  }
+  .stepper button:hover{background:var(--black-3);}
+  .stepper .qty-val{
+    width:30px;text-align:center;
+    font-family:var(--font-mono);font-size:13px;color:var(--paper);
+  }
+  .ring-up-btn{
+    background:var(--amber);
+    color:var(--black);
+    border:none;
+    border-radius:8px;
+    padding:8px 13px;
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:11px;
+    letter-spacing:0.06em;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .ring-up-btn:hover{background:#FFB257;}
+
+  .order-lines{margin-top:18px;}
+  .order-lines-title{font-size:12px;color:var(--ink-soft);margin-bottom:8px;letter-spacing:0.05em;}
+  .order-line{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:9px 0;
+    border-bottom:1px dashed rgba(255,255,255,0.08);
+    font-size:13.5px;
+  }
+  .order-line .ol-name{color:var(--paper);}
+  .order-line .ol-meta{font-family:var(--font-mono);color:var(--ink-soft);font-size:12px;margin-left:8px;}
+  .order-line .ol-right{display:flex;align-items:center;gap:10px;}
+  .ol-cost{font-family:var(--font-mono);color:var(--amber);}
+  .ol-remove{
+    background:none;border:none;color:var(--red);
+    cursor:pointer;font-size:16px;line-height:1;padding:2px 4px;
+  }
+  .order-empty-hint{color:var(--ink-soft);font-size:13px;padding:10px 0;}
+
+  .place-order-row{
+    margin-top:18px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .grand-total{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+  .grand-total b{color:var(--amber);font-size:16px;}
+  .print-btn{
+    background:var(--paper);
+    color:var(--black);
+    border:none;
+    border-radius:9px;
+    padding:12px 18px;
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:12.5px;
+    letter-spacing:0.06em;
+    cursor:pointer;
+  }
+  .print-btn:hover{background:#fff;}
+  .print-btn:disabled{opacity:0.4;cursor:not-allowed;}
+
+  .error-msg{
+    background:rgba(193,67,43,0.12);
+    border:1px solid var(--red-dim);
+    color:#FF9A85;
+    border-radius:8px;
+    padding:9px 12px;
+    font-size:13px;
+    margin-top:12px;
+  }
+
+  /* admin */
+  .admin-lock{
+    display:flex;flex-direction:column;align-items:center;
+    text-align:center;
+    padding:40px 10px;
+  }
+  .lock-icon{width:46px;height:46px;color:var(--amber);margin-bottom:16px;}
+  .admin-lock .text-input{max-width:220px;text-align:center;letter-spacing:0.2em;}
+
+  .admin-grid{display:flex;flex-direction:column;gap:10px;}
+  .admin-action{
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--black);
+    border:1px solid rgba(255,255,255,0.06);
+    border-radius:var(--radius-sm);
+    padding:16px 16px;
+    cursor:pointer;
+    text-align:left;
+  }
+  .admin-action:hover{border-color:rgba(255,157,46,0.4);}
+  .admin-action .aa-title{font-weight:600;font-size:14.5px;color:var(--paper);}
+  .admin-action .aa-sub{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  .admin-action .aa-arrow{color:var(--amber);font-family:var(--font-mono);}
+
+  .back-row{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .back-btn{
+    background:none;border:none;color:var(--ink-soft);
+    font-family:var(--font-mono);font-size:12px;cursor:pointer;
+    display:flex;align-items:center;gap:6px;padding:4px 0;
+  }
+  .back-btn:hover{color:var(--paper);}
+  .lock-btn{
+    background:none;border:1px solid var(--red-dim);color:#FF9A85;
+    border-radius:7px;padding:6px 11px;font-size:11px;font-family:var(--font-mono);
+    cursor:pointer;
+  }
+
+  .zreport-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:6px;
+  }
+  .vfd-tile{
+    background:var(--black);
+    border:1px solid rgba(255,157,46,0.18);
+    border-radius:10px;
+    padding:14px 16px;
+  }
+  .vfd-tile.wide{grid-column:1 / -1;}
+  .vfd-label{font-size:11px;color:var(--ink-soft);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;}
+  .vfd-value{
+    font-family:var(--font-mono);
+    font-weight:700;
+    color:var(--amber);
+    text-shadow:0 0 10px rgba(255,157,46,0.45);
+    font-size:26px;
+    letter-spacing:0.02em;
+  }
+  .vfd-value.small{font-size:18px;}
+
+  .clear-tape-row{margin-top:18px;text-align:right;}
+  .clear-tape-btn{
+    background:none;border:1px solid rgba(255,255,255,0.12);color:var(--ink-soft);
+    border-radius:7px;padding:7px 12px;font-size:11px;font-family:var(--font-mono);
+    cursor:pointer;
+  }
+  .clear-tape-btn:hover{color:#FF9A85;border-color:var(--red-dim);}
+
+  /* ---- receipt roll (right column) ---- */
+  .receipt-slot{
+    background:var(--black-2);
+    border-radius:var(--radius-md);
+    border:1px solid rgba(255,255,255,0.05);
+    padding:18px 16px 16px;
+    display:flex;
+    flex-direction:column;
+    min-height:420px;
+  }
+  .slot-label{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:12px;
+  }
+  .roll-frame{
+    flex:1;
+    background:var(--black-2);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .perforation{
+    height:12px;flex:none;
+    background-image:radial-gradient(circle at 7px 0, var(--black-2) 6px, transparent 6.4px);
+    background-size:14px 12px;
+    background-repeat:repeat-x;
+    background-color:var(--paper);
+  }
+  .paper-scroll{
+    background:var(--paper);
+    color:var(--ink);
+    padding:16px 16px 22px;
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    line-height:1.55;
+    overflow-y:auto;
+    max-height:520px;
+    box-shadow:0 14px 24px -10px rgba(0,0,0,0.5);
+    position:relative;
+  }
+  .ticket{padding-bottom:14px;margin-bottom:14px;border-bottom:1px dashed var(--paper-shadow);}
+  .ticket:last-child{border-bottom:none;margin-bottom:0;}
+  .ticket-head{text-align:center;margin-bottom:10px;}
+  .ticket-head .th-name{font-weight:700;letter-spacing:0.06em;font-size:13px;}
+  .ticket-head .th-time{font-size:10.5px;color:var(--ink-soft);margin-top:2px;}
+  .ticket-cust{margin-bottom:8px;font-size:12px;}
+  .ticket-rule{border:none;border-top:1px dashed var(--paper-shadow);margin:8px 0;}
+  .ticket-row{display:flex;justify-content:space-between;gap:8px;}
+  .ticket-row .tr-item{flex:1;}
+  .ticket-total{display:flex;justify-content:space-between;font-weight:700;margin-top:6px;font-size:13.5px;}
+  .ticket-foot{text-align:center;margin-top:10px;font-size:11px;color:var(--ink-soft);}
+
+  .roll-empty{
+    color:var(--ink-soft);
+    font-size:12.5px;
+    text-align:center;
+    padding:40px 16px;
+    font-family:var(--font-mono);
+  }
+
+  .stamp-overlay{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    pointer-events:none;
+    opacity:0;
+    transform:scale(1.3) rotate(-8deg);
+    transition:opacity .25s, transform .25s;
+  }
+  .stamp-overlay.show{opacity:1;transform:scale(1) rotate(-8deg);}
+  .stamp-text{
+    border:3px solid var(--green);
+    color:var(--green);
+    font-family:var(--font-mono);
+    font-weight:800;
+    font-size:16px;
+    letter-spacing:0.08em;
+    padding:8px 14px;
+    border-radius:6px;
+    background:rgba(79,143,98,0.08);
+    transform:rotate(-8deg);
+  }
+
+  .slot-caption{
+    text-align:center;
+    font-size:10.5px;
+    color:var(--ink-soft);
+    margin-top:10px;
+    font-family:var(--font-mono);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="masthead">
+    <div class="eyebrow">Model CMS&#8209;1</div>
+    <h1>CAFE MANAGEMENT SYSTEM</h1>
+  </div>
+
+  <div class="pos-machine">
+    <div class="pos-header">
+      <div class="brand"><span class="dot"></span> COUNTER TERMINAL · ONLINE</div>
+      <button class="key-switch" id="keySwitch" data-mode="customer" aria-label="Switch between Customer and Admin mode" onclick="toggleMode()">
+        <span class="track-label left">CUSTOMER</span>
+        <span class="track-label right">ADMIN</span>
+        <span class="key-thumb">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+            <circle cx="8" cy="12" r="4.2"></circle>
+            <path d="M11.8 12h9.8M17.5 12v3.4M20.5 12v2.4"></path>
+          </svg>
+          <span id="keyLabel">CUSTOMER</span>
+        </span>
+      </button>
+    </div>
+
+    <div class="pos-body">
+      <section class="panel" id="controlPanel"></section>
+      <aside class="receipt-slot">
+        <div class="slot-label">Receipt Roll</div>
+        <div class="roll-frame" id="rollFrame">
+          <div class="perforation"></div>
+          <div class="paper-scroll" id="paperScroll" style="position:relative;"></div>
+        </div>
+        <div class="slot-caption" id="slotCaption">Today's till · resets when register reboots</div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<script>
+const MENU = [
+  {id:'coffee',   name:'Coffee',   price:120},
+  {id:'tea',      name:'Tea',      price:70},
+  {id:'sandwich', name:'Sandwich', price:100},
+  {id:'burger',   name:'Burger',   price:90},
+  {id:'pizza',    name:'Pizza',    price:300},
+];
+const ADMIN_KEY = 'ABCD123';
+
+let mode = 'customer';        // 'customer' | 'admin'
+let adminAuthed = false;
+let adminView = 'login';      // 'login' | 'menu' | 'journal' | 'zreport'
+let currentOrder = [];        // {id,name,price,qty,lineTotal}
+let qtyMap = {};
+MENU.forEach(m => qtyMap[m.id] = 1);
+let savedReceipts = [];       // {name, items, total, time}
+let errorMsg = '';
+let printing = false;
+
+function fmt(n){ return 'Rs.' + n.toLocaleString('en-IN'); }
+function fmtTime(d){
+  return d.toLocaleString('en-IN', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
+}
+
+function toggleMode(){
+  errorMsg = '';
+  if(mode === 'customer'){
+    mode = 'admin';
+    adminView = adminAuthed ? 'menu' : 'login';
+  } else {
+    mode = 'customer';
+  }
+  render();
+}
+
+function changeQty(id, delta){
+  qtyMap[id] = Math.max(1, (qtyMap[id]||1) + delta);
+  render();
+}
+
+function ringUp(id){
+  const item = MENU.find(m => m.id === id);
+  const qty = qtyMap[id] || 1;
+  const lineTotal = item.price * qty;
+  const existing = currentOrder.find(o => o.id === id);
+  if(existing){
+    existing.qty += qty;
+    existing.lineTotal += lineTotal;
+  } else {
+    currentOrder.push({id, name:item.name, price:item.price, qty, lineTotal});
+  }
+  qtyMap[id] = 1;
+  errorMsg = '';
+  render();
+}
+
+function removeLine(id){
+  currentOrder = currentOrder.filter(o => o.id !== id);
+  render();
+}
+
+function updateReceiptName(val){
+  const el = document.getElementById('receiptCustName');
+  if(el) el.textContent = val.trim() || '—';
+}
+
+function placeOrder(){
+  const nameInput = document.getElementById('custName');
+  const name = nameInput ? nameInput.value.trim() : '';
+  if(!name){ errorMsg = "Enter the customer's name before printing."; render(); return; }
+  if(currentOrder.length === 0){ errorMsg = 'Ring up at least one item first.'; render(); return; }
+
+  const total = currentOrder.reduce((s,o) => s + o.lineTotal, 0);
+  const receipt = { name, items: currentOrder.map(o => ({...o})), total, time: new Date() };
+  savedReceipts.push(receipt);
+  currentOrder = [];
+  errorMsg = '';
+  printing = true;
+  render();
+  setTimeout(() => { printing = false; render(); }, 1500);
+}
+
+function adminLogin(){
+  const input = document.getElementById('adminPass');
+  const val = input ? input.value : '';
+  if(val === ADMIN_KEY){
+    adminAuthed = true;
+    adminView = 'menu';
+    errorMsg = '';
+  } else {
+    errorMsg = 'Incorrect manager key. Try again.';
+  }
+  render();
+}
+
+function lockRegister(){
+  adminAuthed = false;
+  adminView = 'login';
+  mode = 'customer';
+  errorMsg = '';
+  render();
+}
+
+function goAdminView(v){
+  errorMsg = '';
+  adminView = v;
+  render();
+}
+
+function clearTape(){
+  savedReceipts = [];
+  render();
+}
+
+/* ---------- rendering ---------- */
+
+function render(){
+  document.getElementById('keySwitch').setAttribute('data-mode', mode);
+  document.getElementById('keyLabel').textContent = mode === 'customer' ? 'CUSTOMER' : 'ADMIN';
+  document.getElementById('controlPanel').innerHTML = mode === 'customer' ? renderCustomerPanel() : renderAdminPanel();
+  document.getElementById('paperScroll').innerHTML = renderReceiptRoll();
+  document.getElementById('slotCaption').textContent =
+    mode === 'admin' && adminView === 'journal'
+      ? "Full journal tape · every ticket printed today"
+      : "Today's till · resets when register reboots";
+}
+
+function renderCustomerPanel(){
+  let html = '';
+  html += `<p class="panel-title">Customer · New Order</p>`;
+  html += `<h2 class="panel-heading">Take an Order</h2>`;
+
+  html += `<label class="field-label" for="custName">Customer name</label>`;
+  html += `<input class="text-input" id="custName" type="text" placeholder="e.g. Asha Verma" oninput="updateReceiptName(this.value)">`;
+
+  html += `<div class="menu-grid">`;
+  MENU.forEach(item => {
+    html += `
+      <div class="menu-key">
+        <div class="mk-info">
+          <span class="mk-name">${item.name}</span>
+          <span class="mk-price">${fmt(item.price)} each</span>
+        </div>
+        <div class="mk-controls">
+          <div class="stepper">
+            <button type="button" onclick="changeQty('${item.id}',-1)" aria-label="Decrease quantity">−</button>
+            <span class="qty-val">${qtyMap[item.id]}</span>
+            <button type="button" onclick="changeQty('${item.id}',1)" aria-label="Increase quantity">+</button>
+          </div>
+          <button type="button" class="ring-up-btn" onclick="ringUp('${item.id}')">Ring Up</button>
+        </div>
+      </div>`;
+  });
+  html += `</div>`;
+
+  html += `<div class="order-lines">`;
+  html += `<div class="order-lines-title">Current ticket</div>`;
+  if(currentOrder.length === 0){
+    html += `<div class="order-empty-hint">No items rung up yet.</div>`;
+  } else {
+    currentOrder.forEach(o => {
+      html += `
+        <div class="order-line">
+          <div>
+            <span class="ol-name">${o.name}</span>
+            <span class="ol-meta">× ${o.qty}</span>
+          </div>
+          <div class="ol-right">
+            <span class="ol-cost">${fmt(o.lineTotal)}</span>
+            <button type="button" class="ol-remove" onclick="removeLine('${o.id}')" aria-label="Remove ${o.name} from order">✕</button>
+          </div>
+        </div>`;
+    });
+  }
+  html += `</div>`;
+
+  const total = currentOrder.reduce((s,o) => s + o.lineTotal, 0);
+  html += `
+    <div class="place-order-row">
+      <div class="grand-total">Total <br><b>${fmt(total)}</b></div>
+      <button type="button" class="print-btn" onclick="placeOrder()" ${currentOrder.length===0?'disabled':''}>Print Receipt</button>
+    </div>`;
+
+  if(errorMsg) html += `<div class="error-msg">${errorMsg}</div>`;
+
+  return html;
+}
+
+function renderAdminPanel(){
+  if(!adminAuthed || adminView === 'login'){
+    return `
+      <p class="panel-title">Admin · Manager Key</p>
+      <h2 class="panel-heading">Unlock Register</h2>
+      <div class="admin-lock">
+        <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="4" y="11" width="16" height="9" rx="2"></rect>
+          <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
+        </svg>
+        <label class="field-label" for="adminPass">Enter manager key</label>
+        <input class="text-input" id="adminPass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()">
+        <button type="button" class="print-btn" onclick="adminLogin()">Unlock Register</button>
+        ${errorMsg ? `<div class="error-msg">${errorMsg}</div>` : ''}
+      </div>`;
+  }
+
+  if(adminView === 'menu'){
+    return `
+      <p class="panel-title">Admin · Back Office</p>
+      <h2 class="panel-heading">Manager Panel</h2>
+      <div class="admin-grid">
+        <button type="button" class="admin-action" onclick="goAdminView('journal')">
+          <div>
+            <div class="aa-title">Journal Tape</div>
+            <div class="aa-sub">Every receipt printed this session</div>
+          </div>
+          <span class="aa-arrow">→</span>
+        </button>
+        <button type="button" class="admin-action" onclick="goAdminView('zreport')">
+          <div>
+            <div class="aa-title">Z‑Report</div>
+            <div class="aa-sub">Sales totals for the till</div>
+          </div>
+          <span class="aa-arrow">→</span>
+        </button>
+        <button type="button" class="admin-action" onclick="lockRegister()">
+          <div>
+            <div class="aa-title">Lock Register</div>
+            <div class="aa-sub">Return to customer mode</div>
+          </div>
+          <span class="aa-arrow">→</span>
+        </button>
+      </div>`;
+  }
+
+  if(adminView === 'journal'){
+    return `
+      <div class="back-row">
+        <button type="button" class="back-btn" onclick="goAdminView('menu')">← Back</button>
+        <button type="button" class="lock-btn" onclick="lockRegister()">Lock</button>
+      </div>
+      <p class="panel-title">Admin · Journal Tape</p>
+      <h2 class="panel-heading">${savedReceipts.length} ticket${savedReceipts.length===1?'':'s'} on file</h2>
+      <p style="color:var(--ink-soft);font-size:13px;line-height:1.6;">
+        The full tape is printing out on the roll to the right — scroll it to review every order rung up this session.
+      </p>
+      <div class="clear-tape-row">
+        <button type="button" class="clear-tape-btn" onclick="clearTape()">Clear Tape</button>
+      </div>`;
+  }
+
+  if(adminView === 'zreport'){
+    const ticketCount = savedReceipts.length;
+    const totalRevenue = savedReceipts.reduce((s,r) => s + r.total, 0);
+    const itemCounts = {};
+    savedReceipts.forEach(r => r.items.forEach(i => { itemCounts[i.name] = (itemCounts[i.name]||0) + i.qty; }));
+    const itemsSold = Object.values(itemCounts).reduce((a,b) => a+b, 0);
+    let bestSeller = '—';
+    let bestQty = 0;
+    Object.entries(itemCounts).forEach(([name,qty]) => { if(qty > bestQty){ bestQty = qty; bestSeller = name; } });
+    const avgTicket = ticketCount ? Math.round(totalRevenue / ticketCount) : 0;
+
+    return `
+      <div class="back-row">
+        <button type="button" class="back-btn" onclick="goAdminView('menu')">← Back</button>
+        <button type="button" class="lock-btn" onclick="lockRegister()">Lock</button>
+      </div>
+      <p class="panel-title">Admin · Z‑Report</p>
+      <h2 class="panel-heading">Sales Summary</h2>
+      <div class="zreport-grid">
+        <div class="vfd-tile wide">
+          <div class="vfd-label">Total Sales</div>
+          <div class="vfd-value">${fmt(totalRevenue)}</div>
+        </div>
+        <div class="vfd-tile">
+          <div class="vfd-label">Tickets Closed</div>
+          <div class="vfd-value small">${ticketCount}</div>
+        </div>
+        <div class="vfd-tile">
+          <div class="vfd-label">Items Sold</div>
+          <div class="vfd-value small">${itemsSold}</div>
+        </div>
+        <div class="vfd-tile">
+          <div class="vfd-label">Avg. Ticket</div>
+          <div class="vfd-value small">${fmt(avgTicket)}</div>
+        </div>
+        <div class="vfd-tile">
+          <div class="vfd-label">Best Seller</div>
+          <div class="vfd-value small">${bestSeller}</div>
+        </div>
+      </div>`;
+  }
+
+  return '';
+}
+
+function renderReceiptRoll(){
+  if(mode === 'admin' && adminView === 'journal'){
+    if(savedReceipts.length === 0){
+      return `<div class="roll-empty">No tickets printed yet today.</div>`;
+    }
+    let html = '';
+    [...savedReceipts].reverse().forEach(r => { html += ticketMarkup(r); });
+    return html;
+  }
+
+  if(mode === 'admin'){
+    return `<div class="roll-empty">Tape idle.<br>Open Journal Tape to view receipts.</div>`;
+  }
+
+  // customer mode: live current ticket
+  let overlay = `<div class="stamp-overlay ${printing ? 'show' : ''}"><div class="stamp-text">ORDER PLACED</div></div>`;
+
+  if(currentOrder.length === 0){
+    return overlay + `<div class="roll-empty">Ticket is empty.<br>Ring up items to begin printing.</div>`;
+  }
+
+  const total = currentOrder.reduce((s,o) => s + o.lineTotal, 0);
+  let html = `<div class="ticket">
+    <div class="ticket-head">
+      <div class="th-name">☕ CAFE MANAGEMENT SYSTEM</div>
+      <div class="th-time">${fmtTime(new Date())}</div>
+    </div>
+    <div class="ticket-cust">Customer: <span id="receiptCustName">—</span></div>
+    <hr class="ticket-rule">`;
+  currentOrder.forEach(o => {
+    html += `<div class="ticket-row"><span class="tr-item">${o.name} × ${o.qty}</span><span>${fmt(o.lineTotal)}</span></div>`;
+  });
+  html += `<hr class="ticket-rule">
+    <div class="ticket-total"><span>TOTAL</span><span>${fmt(total)}</span></div>
+    <div class="ticket-foot">Thank you for visiting!</div>
+  </div>`;
+
+  return overlay + html;
+}
+
+function ticketMarkup(r){
+  let html = `<div class="ticket">
+    <div class="ticket-head">
+      <div class="th-name">☕ CAFE MANAGEMENT SYSTEM</div>
+      <div class="th-time">${fmtTime(new Date(r.time))}</div>
+    </div>
+    <div class="ticket-cust">Customer: ${r.name}</div>
+    <hr class="ticket-rule">`;
+  r.items.forEach(o => {
+    html += `<div class="ticket-row"><span class="tr-item">${o.name} × ${o.qty}</span><span>${fmt(o.lineTotal)}</span></div>`;
+  });
+  html += `<hr class="ticket-rule">
+    <div class="ticket-total"><span>TOTAL</span><span>${fmt(r.total)}</span></div>
+    <div class="ticket-foot">Thank you for visiting!</div>
+  </div>`;
+  return html;
+}
+
+render();
+</script>
+</body>
+</html>
