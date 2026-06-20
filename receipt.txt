@@ -1,0 +1,30 @@
+-------RECEIPT-------
+Customer: Harry
+
+ Items Ordered:
+burger x 6 = Rs.540
+ TOTAL BILL = Rs.540
+Thank You for Visiting!-------RECEIPT-------
+Customer: SA
+
+ Items Ordered:
+Tea x 1 = Rs.70
+ TOTAL BILL = Rs.70
+Thank You for Visiting!-------RECEIPT-------
+Customer: Nitin Rastogi
+
+ Items Ordered:
+Sandwich x 2 = Rs.200
+ TOTAL BILL = Rs.200
+Thank You for Visiting!-------RECEIPT-------
+Customer: 
+
+ Items Ordered:
+ TOTAL BILL = Rs.0
+Thank You for Visiting!-------RECEIPT-------
+Customer: Suahn
+
+ Items Ordered:
+Coffee x 2 = Rs.240
+ TOTAL BILL = Rs.240
+Thank You for Visiting!
